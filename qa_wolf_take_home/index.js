@@ -21,7 +21,6 @@ async function sortHackerNewsArticles() {
     while (articles.length < 100) {
     const pageArticles = await page.$$eval('.athing', rows => {
         return rows.map(row => {
-            // Extract the title
             const titleElement = row.querySelector('.titleline a');
             const title = titleElement ? titleElement.innerText : '';
             const id = row.id;
@@ -29,15 +28,16 @@ async function sortHackerNewsArticles() {
             const time = timeElement ? timeElement.innerText : '';
             const timestamp = timeElement ? timeElement.getAttribute('title') : '';
 
-            // Return article only if it has valid data
             return (title && id && timestamp) ? { title, id, time, timestamp } : null;
-        }).filter(article => article !== null); // Filter out invalid articles
+        }).filter(article => article !== null);
     });
 
     if (pageArticles.length === 0) {
         console.warn("No articles found.");
         break;
     }
+
+//    articles.push(...pageArticles);
 
     for (const article of pageArticles) {
         if (articles.length < 100) {
@@ -60,20 +60,9 @@ async function sortHackerNewsArticles() {
     }
     }
 
-    let allArticlesValid = true;
+    const allArticlesValid = articles.every(article => article && article.title && article.timestamp && article.id);
 
-  articles.forEach(article => {
-    const isValid = article.title && article.timestamp && article.id;
-    if (!isValid) {
-      console.warn(`❌ Invalid article: ${JSON.stringify(article)}`);
-      allArticlesValid = false;
-    }
-  });
-
-    const sorted = articles.every((article, i, arr) => {
-        if (i === 0) return true; // First article, no comparison
-        return new Date(article.timestamp) <= new Date(arr[i - 1].timestamp); // Articles should be sorted in descending order
-    });
+    const sorted = articles.every((article, i, arr) => i === 0 || new Date(article.timestamp) <= new Date(arr[i - 1].timestamp));
 
     console.log("\n=== Scraping Results ===");
     console.log(`✅ Successfully collected ${articles.length} articles.`);
@@ -81,7 +70,7 @@ async function sortHackerNewsArticles() {
     if (articles.length === 100) {
     console.log("✅ Successfully collected 100 valid articles.");
     } else {
-    console.warn(`Only ${articles.length} valid articles were collected. Please check the website or scraping logic.`);
+    console.warn(`${articles.length} valid articles were collected (requested: 100). Please check the website or scraping logic.`);
     }
 
     if (allArticlesValid) {
@@ -97,31 +86,9 @@ async function sortHackerNewsArticles() {
   }
 
   const endTime = Date.now();
-  console.log(`️ Scraping completed in ${endTime - startTime} milliseconds`);
+  console.log(`️Scraping completed in ${endTime - startTime} milliseconds`);
   console.log("=========================\n");
 
-    // Ensure we have exactly 100 articles collected
-//    if (articles.length === 100) {
-//    console.log("Successfully collected 100 valid articles.");
-//    } else {
-//    console.warn(`Only ${articles.length} valid articles were collected. Please check the website or scraping logic.`);
-//    }
-//
-//    if (allValid) {
-//        console.log("All articles are valid.");
-//    } else {
-//        console.warn("Only ${articles.length} valid articles were collected.");
-//    }
-//    if (sorted) {
-//        console.log("Articles are sorted from newest to oldest.");
-//    } else {
-//        console.log("Articles are NOT sorted correctly.");
-//    }
-//
-//
-//    const endTime = Date.now();
-//    console.log(`Scraping completed in ${endTime - startTime} milliseconds`);
-    // Close the browser
     await browser.close();
 }
 
