@@ -3,7 +3,7 @@ const { chromium } = require("playwright");
 
 async function sortHackerNewsArticles() {
   // launch browser
-    const browser = await chromium.launch({ headless: false });
+    const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
     const page = await context.newPage();
 
@@ -37,8 +37,6 @@ async function sortHackerNewsArticles() {
         break;
     }
 
-//    articles.push(...pageArticles);
-
     for (const article of pageArticles) {
         if (articles.length < 100) {
         articles.push(article);
@@ -64,7 +62,7 @@ async function sortHackerNewsArticles() {
 
     const sorted = articles.every((article, i, arr) => i === 0 || new Date(article.timestamp) <= new Date(arr[i - 1].timestamp));
 
-    console.log("\n=== Scraping Results ===");
+    console.log("\n=== Testing Results ===");
     console.log(`✅ Successfully collected ${articles.length} articles.`);
 
     if (articles.length === 100) {
